@@ -1,0 +1,9 @@
+customtkinter
+pyrebase4
+firebase-admin
+Pillow
+python-dotenv
+playsound
+plyer
+pytest
+pre-commit

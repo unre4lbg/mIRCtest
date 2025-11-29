@@ -1,0 +1,90 @@
+FILE MANIFEST — mIRCTest
+Generated: 2025-11-29
+
+Overview:
+This manifest lists repository files and a short explanation of each to help you understand purpose and structure.
+
+--- Top-level files ---
+
+`client_gui.py`:
+- Original/monolithic GUI application (login + chat). Contains the CustomTkinter-based UI, message listeners and logic. Kept for compatibility and as a reference during refactor.
+
+`config.py`:
+- Project configuration and defaults (colors, window sizes, Firebase config fallback, path for `key.json`). Loads environment variables via `python-dotenv` when present.
+
+`requirements.txt`:
+- Python package dependencies for the project (CustomTkinter, firebase libs, Pillow, etc.). Use to reproduce environment.
+
+`logo.png`:
+- Application logo used on the login screen.
+
+`key.json`:
+- (Present locally) Service account credentials for firebase-admin. This is a secret and should NOT be committed to public repos. It is listed in `.gitignore` and appears untracked.
+
+`.gitignore`:
+- Lists files/folders to exclude from git (e.g., `key.json`, `__pycache__`, `.env`).
+
+`.pre-commit-config.yaml`:
+- Configuration for `pre-commit` hooks (black, isort). Ensures consistent formatting.
+
+--- services/ ---
+
+`services/__init__.py`:
+- Package marker for `services`.
+
+`services/auth_service.py`:
+- Thin wrapper around Pyrebase auth operations (register / sign in); used by the UI to handle authentication.
+
+`services/firestore_client.py`:
+- Wrapper for `firebase-admin` Firestore operations. Initializes Firestore with `key.json`, provides helpers: `init_firestore`, `get_db`, `add_message`, `get_history_paginated`, `stream_room`.
+
+--- src/ ---
+
+`src/main.py`:
+- Project entrypoint that calls `run_app()` (wires UI controllers/views). Useful for packaging/launcher scripts.
+
+`src/ui/app.py`:
+- High-level UI bootstrapper that constructs the view and controller and starts the main loop (migration target of `client_gui.py`).
+
+`src/ui/views.py`:
+- Factory / helpers that create the UI views (migrated components from the monolithic GUI). Contains functions to create windows and common widgets.
+
+`src/ui/controllers.py`:
+- `AppController` which connects services and views, contains pagination logic and message caching. Holds logic extracted from `client_gui.py` to make the app more testable.
+
+--- utils/ ---
+
+`utils/__init__.py`:
+- Package marker for `utils`.
+
+`utils/notify.py`:
+- Cross-platform notification helper (desktop notifications + optional sound). Replaces platform-specific notify calls (e.g., `winsound`). Used for DM/unread alerts.
+
+--- tests/ ---
+
+`tests/test_firestore_client.py`:
+- Unit test(s) for the Firestore wrapper (`services/firestore_client.py`). Uses mocking for Firestore where possible.
+
+--- CI / GitHub ---
+
+`.github/workflows/ci.yml`:
+- GitHub Actions workflow that installs dependencies and runs tests on push/PR.
+
+--- Backups / archives (previously present) ---
+
+`backups/`:
+- Folder created by cleanup actions. Originally contained `Бекъп_backup_...zip` but that archive was removed from the repo on your request.
+
+--- Notes & recommendations ---
+
+- Secrets: `key.json` contains credentials and must be kept outside version control. You already have `key.json` in `.gitignore`; treat any local copies carefully.
+- Monolithic vs modular: `client_gui.py` is the original single-file GUI. The `src/ui/` and `services/` modules are the refactored, modular versions. Prefer using `src/main.py` for launching the refactored app.
+- Formatting & hooks: Run `pre-commit run --all-files` locally to apply formatting. You've already run this in the repo.
+- Large files: `logo.png` is the largest non-git object file. If you don't need it in the repo, consider moving it to `assets/` or storing externally.
+
+If you'd like, I can:
+- Convert this manifest to markdown (`FILE_MANIFEST.md`) with links to files.
+- Expand any entry with more detailed descriptions or TODOs per file (for refactor tasks).
+- Produce a README summarizing how to run the app locally (install deps, set `GOOGLE_APPLICATION_CREDENTIALS`, run `python -m src.main`).
+
+--- End of manifest ---
